@@ -1,0 +1,16 @@
+kprobe:send_sig {
+   printf("[%s(%d)] %s(sig=%d pid=%d priv=%d ret=%d)\n", comm, pid, func, arg0, ((struct task_struct *)arg1)->pid, arg2, arg3);
+   printf("%s\n", kstack);
+}
+tracepoint:syscalls:sys_enter_ptrace / comm == "gdb" || comm == "a.out"/ {
+   printf("[%s(%d)] sys_enter_ptrace(req=%d pid=%d addr=%x data=%x)\n", comm, pid, args->request, args->pid, args->addr, args->data);
+}
+tracepoint:syscalls:sys_enter_execve / comm == "gdb" || comm == "a.out"/ {
+   printf("[%s(%d)] sys_enter_execve(filename=%s)\n", comm, pid, str(args->filename));
+}
+tracepoint:syscalls:sys_enter_vfork / comm == "gdb" || comm == "a.out" / {
+   printf("[%s(%d)] sys_enter_vfork()\n", comm, pid);
+}
+tracepoint:syscalls:sys_exit_vfork / comm == "gdb" || comm == "a.out" / {
+   printf("[%s(%d)] sys_exit_vfork(pid=%d)\n", comm, pid, args->ret);
+}

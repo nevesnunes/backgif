@@ -1,0 +1,7 @@
+tracepoint:raw_syscalls:sys_enter /comm == "a.out"/ {
+    @[args->id] = count();
+}
+interval:s:1 {
+    print(@);
+    clear(@);
+}

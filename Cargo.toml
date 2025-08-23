@@ -1,0 +1,15 @@
+[package]
+name = "backgif"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+clap = { version = "4.5.43", features = ["derive"] }
+colored = "3.0.0"
+gif = "0.13.3"
+iced-x86 = "1.21.0"
+itertools = "0.14.0"
+lief = "0.16.6"
+memchr = "2.7.5"
+palette = "0.7.6"
+serde_json = "1.0.142"
