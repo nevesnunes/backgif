@@ -143,7 +143,7 @@ But our expected output is: none!
 
 Typically debuggers implement software breakpoints by temporarily patching the address where a breakpoint is set (in x86 it would be a single `0xCC` byte), then reverting it back once the debuggee hits the breakpoint.
 
-In our GDB scripts, we can just use hardware breakpoints, which do not make these patches on memory, satisfying our self-imposed restriction. But what about stopping with `starti`, i.e. before the process executes any instruction? Does that also use breakpoints? Nope: GDB forks, and before the child process runs execve(), it calls ptrace() with `PTRACE_TRACEME`. In these conditions, the kernel sends a `SIGTRAP` back to the parent process, so the end result is what we expect: the target is suspended.
+In our GDB scripts, we can just use hardware breakpoints, which do not make these patches on memory, satisfying our self-imposed restriction. But what about stopping with `starti`, i.e. before the process executes any instruction? Does that also use breakpoints? Nope: GDB forks, and before the child process runs execve(), it calls ptrace() with `PTRACE_TRACEME`. In these conditions, the [kernel sends a `SIGTRAP`](https://github.com/torvalds/linux/blob/830b3c68c1fb1e9176028d02ef86f3cf76aa2476/include/linux/ptrace.h#L155) back to the parent process, so the end result is what we expect: the target is suspended.
 
 These calls can also be traced with BPF:
 
