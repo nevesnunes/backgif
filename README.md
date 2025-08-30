@@ -12,20 +12,14 @@ That's better! As I was saying, this is a command-line program that renders anim
 
 As a creative challenge, running that executable follows a set of restrictions:
 
-1. Renderer process cannot execute any syscalls [1];
+1. Renderer process cannot execute any syscalls [^1];
 2. Any external process must use built-in functionality to read memory and write to stdout. In particular:
-    * Don't write to the renderer process [2];
+    * Don't write to the renderer process [^2];
     * Don't decorate any read memory (e.g. [GDB Frame Filters](https://sourceware.org/gdb/current/onlinedocs/gdb.html/Writing-a-Frame-Filter.html));
 
 We can use a debugger to set a breakpoint on the renderer process, and show a backtrace when that breakpoint is hit, displaying exactly one animation frame. Then, it's only a matter of running and breaking very carefully over each frame.
 
 People are conditioned to fear backtraces. Let's make them fun for once!
-
----
-
-[1]: What if we want to update symbols at runtime? Symbol table sections are not loaded in process memory. Instead, we compile this executable twice, and on the second time, include the first executable in a custom section. The rendered process then modifies symbols stored in this custom section, which is then read directly by the external process, as if it was a regular binary with debugging data.
-
-[2]: Unfortunately relaxed for current versions (up to 22) of LLDB, as software breakpoints need to be used due to [lack of Linux x86_64 target support for hardware breakpoints](#lackings).
 
 ## Requirements
 
@@ -72,7 +66,7 @@ https://github.com/user-attachments/assets/f47e6b18-a959-4e44-91a2-da764bad112d
 
 ### GIF with emoji renderer
 
-What about graphical debuggers, such as Visual Studio Code? Since these don't handle terminal escape sequences, we can approximate each frame dot as emoji codepoints:
+What about graphical debuggers, such as Visual Studio Code? Since these don't handle terminal escape sequences, we can approximate each frame dot as emoji codepoints [^3]:
 
 ```sh
 cargo run --release example/bunnyhop.gif --debug-info --renderer emoji
@@ -296,3 +290,9 @@ Funnily enough, it's not the first time someone has to [take a trip down LLDB in
 * `rnd_dots.c` modified from [Seiran128 v1 - pseudorandom number generator](https://github.com/andanteyk/prng-seiran/blob/master/seiran128.c);
 * `bgr_to_emoji.json` modified from [emojEncode](https://github.com/Ophelia-Heyes/emojEncode), under [GPL3 License](./LICENSE.GPL3);
 * Remaining files under [MIT License](./LICENSE);
+
+[^1]: What if we want to update symbols at runtime? Symbol table sections are not loaded in process memory. Instead, we compile this executable twice, and on the second time, include the first executable in a custom section. The rendered process then modifies symbols stored in this custom section, which is then read directly by the external process, as if it was a regular binary with debugging data.
+
+[^2]: Unfortunately relaxed for current versions (up to 22) of LLDB, as software breakpoints need to be used due to [lack of Linux x86_64 target support for hardware breakpoints](#lackings).
+
+[^3]: Symbol patching is not only required to use non-printable characters for terminal escape sequences, but also for emoji in general, as only a [subset of their Unicode ranges are allowed in identifiers](https://github.com/cplusplus/draft/blob/8641e3cb56d56a07d6fa6ac49000766f76aaae07/source/lex.tex#L684) (in later drafts [identified by Unicode property XID_Start](https://github.com/cplusplus/draft/blob/431de65f7db6dae1c653ce23faf7343e8c113b25/source/lex.tex#L904)).
